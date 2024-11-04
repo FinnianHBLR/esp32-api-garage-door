@@ -48,7 +48,10 @@ void setup() {
 
   if (!WiFi.config(local_IP, gateway, subnet)) {
   }
-
+  
+  WiFi.setSleep(false);
+  WiFi.setAutoReconnect(true);
+  
   WiFi.begin("", "");
 
   while (WiFi.status() != WL_CONNECTED) {
