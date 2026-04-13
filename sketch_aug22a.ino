@@ -44,6 +44,8 @@ void toggleDoor(Request &req, Response &res) {
       res.sendStatus(403);
     }
   }
+  // If no form data was found, return bad request
+  res.sendStatus(400);
 }
 
 void setup() {
@@ -73,15 +75,15 @@ void loop() {
     ESP.restart();
   }
 
-  // WiFi self-healing
-  if (WiFi.status() != WL_CONNECTED) {
-    WiFi.disconnect();
-  // ADD: SSID + PASS
-    WiFi.begin("", "");
-    delay(5000);  // wait 5 seconds before retrying
-    return; // Skip loop until reconnected
-  }
+static unsigned long lastReconnectAttempt = 0;
 
+  if (WiFi.status() != WL_CONNECTED) {
+    if (millis() - lastReconnectAttempt > 5000) {
+      lastReconnectAttempt = millis();
+      WiFi.begin("", "");
+    }
+    return;
+  }
   // Request handling
   WiFiClient client = server.available();
 
