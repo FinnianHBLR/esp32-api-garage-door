@@ -68,25 +68,27 @@ void setup() {
 }
 
 void loop() {
-  // ✅ 1. Periodic reboot (every 3 days)
+  // Periodic reboot (every 3 days)
   if (millis() - startMillis > 1000UL * 60 * 60 * 24 * 3) {
     ESP.restart();
   }
 
-  // ✅ 2. WiFi self-healing
+  // WiFi self-healing
   if (WiFi.status() != WL_CONNECTED) {
     WiFi.disconnect();
   // ADD: SSID + PASS
     WiFi.begin("", "");
+    delay(5000);  // wait 5 seconds before retrying
     return; // Skip loop until reconnected
   }
 
-  // ✅ 3. Safer client handling
+  // Request handling
   WiFiClient client = server.available();
 
   if (client) {
     unsigned long timeout = millis();
-
+    
+    // Prevent hanging on slow or zombie clients by adding a timeout
     while (client.connected() && !client.available()) {
       if (millis() - timeout > 2000) {
         client.stop();
@@ -95,6 +97,7 @@ void loop() {
       delay(1);
     }
 
+    // Process the request (only if data exists)
     if (client.available()) {
       app.process(&client);
     }
